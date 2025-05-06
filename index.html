@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Cloud with French Translations and Colors</title>
+  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.2/src/wordcloud2.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 40px;
+      background-color: #f0f8ff;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    #wordcloud {
+      width: 100%;
+      max-width: 900px;
+      height: 500px;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      background: white;
+      position: relative;
+      border-radius: 10px;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 1000;
+      box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <h1>✨ Word Cloud with Translations ✨</h1>
+  <div id="wordcloud"></div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const words = [
+      ['collaboration', 40],
+      ['innovation', 35],
+      ['efficiency', 30],
+      ['strategy', 25],
+      ['communication', 22],
+      ['productivity', 20],
+      ['leadership', 18],
+      ['creativity', 16],
+      ['teamwork', 14],
+      ['focus', 12],
+      ['growth', 10],
+      ['planning', 9],
+      ['success', 8]
+    ];
+
+    const translations = {
+      collaboration: 'collaboration',
+      innovation: 'innovation',
+      efficiency: 'efficacité',
+      strategy: 'stratégie',
+      communication: 'communication',
+      productivity: 'productivité',
+      leadership: 'leadership',
+      creativity: 'créativité',
+      teamwork: 'travail d’équipe',
+      focus: 'concentration',
+      growth: 'croissance',
+      planning: 'planification',
+      success: 'succès'
+    };
+
+    const colors = [
+      '#FF6B6B', '#4ECDC4', '#FFB400', '#1A535C', '#A29BFE',
+      '#F67280', '#6C5CE7', '#00B894', '#FAB1A0', '#E17055',
+      '#0984E3', '#2D3436', '#00CEC9', '#E84393'
+    ];
+
+    const tooltip = document.getElementById('tooltip');
+
+    WordCloud(document.getElementById('wordcloud'), {
+      list: words,
+      gridSize: 10,
+      weightFactor: 5,
+      fontFamily: 'Segoe UI',
+      rotateRatio: 0.2,
+      backgroundColor: '#ffffff',
+      drawOutOfBound: false,
+      color: function () {
+        return colors[Math.floor(Math.random() * colors.length)];
+      },
+      hover: function(item, dimension, event) {
+        if (item) {
+          const word = item[0];
+          const translation = translations[word] || 'No translation';
+          tooltip.style.left = `${event.pageX + 10}px`;
+          tooltip.style.top = `${event.pageY + 10}px`;
+          tooltip.innerHTML = `<strong>${word}</strong> → ${translation}`;
+          tooltip.style.display = 'block';
+        } else {
+          tooltip.style.display = 'none';
+        }
+      },
+      click: function() {
+        // Pas d'action au clic
+      }
+    });
+  </script>
+</body>
+</html>
