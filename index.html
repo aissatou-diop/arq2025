@@ -171,25 +171,22 @@
       "Coverage of controls": "Couverture des contrôles",
       "Control periodicity": "Périodicité des contrôles",
       "Control owner": "Responsable de contrôle",
-      "Control assignment": "Affectation du contrôle",
-      "Internal control invariant": "Invariant du contrôle interne",
+      "Control assignment": "Attribution des contrôles",
+      "Internal control invariant": "Invariant de contrôle interne",
       "Approved control": "Contrôle approuvé",
       "Validated control": "Contrôle validé",
       "Control to be implemented": "Contrôle à implémenter",
-      "Common control management framework": "Référentiel commun de gestion des contrôles"
+      "Common control management framework": "Cadre de gestion des contrôles commun"
     };
 
-    const canvas = document.getElementById("wordCloudCanvas");
-    const tooltip = document.getElementById("tooltip");
-
-    function drawCloud() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetWidth;
+    const drawCloud = () => {
+      const canvas = document.getElementById('wordCloudCanvas');
+      const tooltip = document.getElementById('tooltip');
 
       WordCloud(canvas, {
         list: words,
-        gridSize: 25,  // Espacement plus grand entre les mots
-        weightFactor: size => (canvas.width / 1024) * size,
+        gridSize: 25, // Espacement des mots
+        weightFactor: 3,
         fontFamily: 'Segoe UI',
         color: function () {
           return `hsl(${Math.random() * 360}, 80%, 60%)`;
@@ -199,8 +196,8 @@
           if (item) {
             const word = item[0];
             tooltip.innerHTML = `<strong>${word}</strong><br>${translations[word] || ''}`;
-            tooltip.style.left = `${event.pageX + 15}px`;  // Plus proche du mot
-            tooltip.style.top = `${event.pageY + 15}px`;  // Plus proche du mot
+            tooltip.style.left = `${event.pageX + 5}px`;  // Encore plus proche du mot
+            tooltip.style.top = `${event.pageY + 5}px`;  // Encore plus proche du mot
             tooltip.style.display = 'block';
           } else {
             tooltip.style.display = 'none';
