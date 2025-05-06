@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Nuage de Mots Risques</title>
+  <title>Nuage de mots Risques</title>
   <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.2/src/wordcloud2.min.js"></script>
   <style>
     body {
@@ -185,27 +185,26 @@
 
       WordCloud(canvas, {
         list: words,
-        gridSize: 15, // Espacement plus large pour une forme plus aérée
-        weightFactor: 5, // Taille des mots plus grande pour créer un effet nuageux
+        gridSize: 25, // Espacement des mots
+        weightFactor: 3,
         fontFamily: 'Segoe UI',
         color: function () {
           return `hsl(${Math.random() * 360}, 80%, 60%)`;
         },
         backgroundColor: '#ffffff',
-        shape: 'circle', // Forme du nuage plus circulaire
         hover: function (item, dimension, event) {
           if (item) {
             const word = item[0];
             tooltip.innerHTML = `<strong>${word}</strong><br>${translations[word] || ''}`;
-            tooltip.style.left = `${event.pageX + 5}px`;  // Positionnement du tooltip plus proche
-            tooltip.style.top = `${event.pageY + 5}px`;
+            tooltip.style.left = `${event.pageX + 5}px`;  // Encore plus proche du mot
+            tooltip.style.top = `${event.pageY + 5}px`;  // Encore plus proche du mot
             tooltip.style.display = 'block';
           } else {
             tooltip.style.display = 'none';
           }
         }
       });
-    };
+    }
 
     drawCloud();
   </script>
