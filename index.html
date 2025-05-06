@@ -1,26 +1,215 @@
-function drawCloud() {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetWidth;
-
-  WordCloud(canvas, {
-    list: words,
-    gridSize: 10,
-    weightFactor: size => (canvas.width / 1024) * size,
-    fontFamily: 'Segoe UI',
-    color: function () {
-      return `hsl(${Math.random() * 360}, 80%, 60%)`; // correction de la syntaxe
-    },
-    backgroundColor: '#ffffff',
-    hover: function (item, dimension, event) {
-      if (item) {
-        const word = item[0];
-        tooltip.innerHTML = `<strong>${word}</strong><br>${translations[word] || ''}`; // correction de la syntaxe
-        tooltip.style.left = `${event.pageX + 10}px`;  // correction des guillemets
-        tooltip.style.top = `${event.pageY + 10}px`; // correction des guillemets
-        tooltip.style.display = 'block';
-      } else {
-        tooltip.style.display = 'none';
-      }
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Nuage de mots Risques</title>
+  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.2/src/wordcloud2.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
     }
-  });
-}
+
+    h1 {
+      color: #2d3436;
+    }
+
+    #canvasContainer {
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      border: 2px solid #dfe6e9;
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      display: none;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌥️ Nuage de Mots – Risques & Contrôles</h1>
+  <div id="canvasContainer">
+    <canvas id="wordCloudCanvas"></canvas>
+    <div id="tooltip" class="tooltip"></div>
+  </div>
+
+  <script>
+    const words = [
+      ['Risk', 35], ['Risk analysis', 30], ['Risk mapping', 28], ['Risk appetite', 25], ['Risk tolerance', 25],
+      ['Risk identification', 30], ['Risk assessment', 28], ['Risk treatment', 26], ['Risk base', 22],
+      ['Evaluation grid', 20], ['Residual risk', 23], ['Gross risk', 22], ['Proven risk', 20],
+      ['Probability', 22], ['Severity', 22], ['Impact', 26], ['Maturity', 20], ['Criticality', 21],
+      ['Key Risk Indicator (KRI)', 28], ['Overall criticality index', 25], ['Top risks', 22],
+      ['Priority risk', 22], ['Unacceptable risks', 22], ['Risk committee', 24],
+      ['Business risks', 23], ['Project risks', 23], ['OHS risks (occupational health and safety)', 23], ['Environmental risks', 23],
+      ['Risk advisor', 20], ['Crisis management', 25], ['Risk audit', 24], ['Internal control', 28],
+      ['COSO', 20], ['Control process', 22], ['Control environment', 22], ['Preventive control', 22],
+      ['Detective control', 22], ['Corrective control', 22], ['Segregation of duties', 20],
+      ['Control testing', 22], ['Internal control documentation', 20], ['Control deficiency', 22],
+      ['Ongoing monitoring', 22], ['Corrective action plan', 22], ['Internal audit', 24],
+      ['Compliance', 22], ['Governance', 22], ['Business process', 22], ['Key Performance Indicator (KPI)', 25],
+      ['Fraud', 22], ['ISO standards (e.g., ISO 31000)', 25], ['Due diligence', 22],
+      ['Risk dashboard', 22], ['Business Continuity Plan (BCP)', 22], ['Business Impact Analysis (BIA)', 22],
+      ['Business Continuity Management System (BCMS)', 22], ['Recovery Time Objective (RTO)', 20], ['Recovery Point Objective (RPO)', 20], ['Maximum Tolerable Period of Disruption (MTPD)', 20], ['Level of service (LOS)', 20],
+      ['Work Area Recovery (WAR)', 20], ['Disaster Recovery Plan (DRP)', 22],
+      ['Treshold for crisis alert', 20], ['Control kit', 20], ['Identification of controls', 22],
+      ['Control label', 20], ['Supporting documents for the control', 20],
+      ['Deployment of controls', 20], ['Taking charge of controls', 20],
+      ['Implementation of controls', 22], ['First-level controls', 20], ['Second-level controls', 20],
+      ['Identification of control owners', 20], ['Execution of controls', 20],
+      ['Description of control execution steps', 20], ['Review of control implementation', 20],
+      ['Identification of discrepancies', 20], ['Evidence of control execution', 20],
+      ['Monitoring of action plans', 20], ['Internal control report', 20],
+      ['Exhaustiveness of controls', 20], ['Coverage of controls', 20], ['Control periodicity', 20],
+      ['Control owner', 20], ['Control assignment', 20], ['Internal control invariant', 20],
+      ['Approved control', 20], ['Validated control', 20], ['Control to be implemented', 20],
+      ['Common control management framework', 20]
+    ];
+
+    const translations = {
+      "Risk": "Risque",
+      "Risk analysis": "Analyse des risques",
+      "Risk mapping": "Cartographie des risques",
+      "Risk appetite": "Appétence au risque",
+      "Risk tolerance": "Tolérance au risque",
+      "Risk identification": "Identification des risques",
+      "Risk assessment": "Évaluation des risques",
+      "Risk treatment": "Traitement des risques",
+      "Risk base": "Base risques",
+      "Evaluation grid": "Grille d'évaluation",
+      "Residual risk": "Risque résiduel",
+      "Gross risk": "Risque brut",
+      "Proven risk": "Risque avéré",
+      "Probability": "Probabilité",
+      "Severity": "Gravité",
+      "Impact": "Impact",
+      "Maturity": "Maturité",
+      "Criticality": "Criticité",
+      "Key Risk Indicator (KRI)": "Indicateur de risque clé (KRI)",
+      "Overall criticality index": "Indice de Criticité Global",
+      "Top risks": "Top risques",
+      "Priority risk": "Risques prioritaires",
+      "Unacceptable risks": "Risques inacceptables",
+      "Risk committee": "Comité risques",
+      "Business risks": "Risques métier",
+      "Project risks": "Risques projet",
+      "OHS risks (occupational health and safety)": "Risques SST (Santé et sécurité au travail)",
+      "Environmental risks": "Risques Environnement",
+      "Risk advisor": "Risk advisor",
+      "Crisis management": "Gestion de crise",
+      "Risk audit": "Audit des risques",
+      "Internal control": "Contrôle interne",
+      "COSO": "COSO",
+      "Control process": "Processus de contrôle",
+      "Control environment": "Environnement de contrôle",
+      "Preventive control": "Contrôle préventif",
+      "Detective control": "Contrôle détectif",
+      "Corrective control": "Contrôle correctif",
+      "Segregation of duties": "Séparation des tâches",
+      "Control testing": "Test de contrôle",
+      "Internal control documentation": "Dossier de contrôle interne",
+      "Control deficiency": "Déficience de contrôle",
+      "Ongoing monitoring": "Surveillance continue",
+      "Corrective action plan": "Plan d’action correctif",
+      "Internal audit": "Audit interne",
+      "Compliance": "Conformité",
+      "Governance": "Gouvernance",
+      "Business process": "Processus métier",
+      "Key Performance Indicator (KPI)": "Indicateur de performance (KPI)",
+      "Fraud": "Fraude",
+      "ISO standards (e.g., ISO 31000)": "Normes ISO (ex : ISO 31000)",
+      "Due diligence": "Due diligence",
+      "Risk dashboard": "Tableau de bord risques",
+      "Business Continuity Plan (BCP)": "Plan de continuité d’activité (PCA)",
+      "Business Impact Analysis (BIA)": "Analyse d'impact sur les activités (AIA)",
+      "Business Continuity Management System (BCMS)": "Système de management de la Continuité d'activité (SMCA)",
+      "Recovery Time Objective (RTO)": "Objectif de délai de reprise d'activité",
+      "Recovery Point Objective (RPO)": "Objectif de point de restauration",
+      "Maximum Tolerable Period of Disruption (MTPD)": "Durée Maximale d'interruption acceptable (DMIA)",
+      "Level of service (LOS)": "Niveau de Service",
+      "Work Area Recovery (WAR)": "Récupération de la zone de travail",
+      "Disaster Recovery Plan (DRP)": "Plan de Reprise d'activité",
+      "Treshold for crisis alert": "Seuil d'alerte crise",
+      "Control kit": "Kit de contrôle",
+      "Identification of controls": "Identification des contrôles",
+      "Control label": "Libellé du contrôle",
+      "Supporting documents for the control": "Pièces justificatives du contrôle",
+      "Deployment of controls": "Déploiement des contrôles",
+      "Taking charge of controls": "Prise en charge des contrôles",
+      "Implementation of controls": "Mise en œuvre des contrôles",
+      "First-level controls": "Contrôles de 1er niveau",
+      "Second-level controls": "Contrôles de 2ème niveau",
+      "Identification of control owners": "Identification des porteurs de contrôle",
+      "Execution of controls": "Réalisation des contrôles",
+      "Description of control execution steps": "Description des étapes de réalisation du contrôle",
+      "Review of control implementation": "Revue de la mise en œuvre des contrôles",
+      "Identification of discrepancies": "Identification des écarts",
+      "Evidence of control execution": "Preuve de réalisation des contrôles",
+      "Monitoring of action plans": "Suivi des plans d'action",
+      "Internal control report": "Rapport de contrôle interne",
+      "Exhaustiveness of controls": "Exhaustivité des contrôles",
+      "Coverage of controls": "Couverture des contrôles",
+      "Control periodicity": "Périodicité des contrôles",
+      "Control owner": "Responsable de contrôle",
+      "Control assignment": "Affectation du contrôle",
+      "Internal control invariant": "Invariant du contrôle interne",
+      "Approved control": "Contrôle approuvé",
+      "Validated control": "Contrôle validé",
+      "Control to be implemented": "Contrôle à implémenter",
+      "Common control management framework": "Référentiel commun de gestion des contrôles"
+    };
+
+    const canvas = document.getElementById("wordCloudCanvas");
+    const tooltip = document.getElementById("tooltip");
+
+    function drawCloud() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetWidth;
+
+      WordCloud(canvas, {
+        list: words,
+        gridSize: 25,  // Espacement plus grand entre les mots
+        weightFactor: size => (canvas.width / 1024) * size,
+        fontFamily: 'Segoe UI',
+        color: function () {
+          return `hsl(${Math.random() * 360}, 80%, 60%)`;
+        },
+        backgroundColor: '#ffffff',
+        hover: function (item, dimension, event) {
+          if (item) {
+            const word = item[0];
+            tooltip.innerHTML = `<strong>${word}</strong><br>${translations[word] || ''}`;
+            tooltip.style.left = `${event.pageX + 15}px`;  // Plus proche du mot
+            tooltip.style.top = `${event.pageY + 15}px`;  // Plus proche du mot
+            tooltip.style.display = 'block';
+          } else {
+            tooltip.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    drawCloud();
+  </script>
+</body>
+</html>
