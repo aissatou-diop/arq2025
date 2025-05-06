@@ -2,193 +2,121 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title> Word Cloud - Risk and Internal Control </title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.1.2/wordcloud2.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Nuage de mots bilingue</title>
   <style>
     body {
-      background-color: #f8f9fa;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
     }
-    .carousel-item {
-      height: 80vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+
+    h2 {
+      color: #333;
     }
+
     canvas {
-      max-width: 100%;
-      max-height: 100%;
+      width: 90%;
+      height: 600px;
+      margin: auto;
+      display: block;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border-radius: 20px;
     }
 
-    /* Carrousel control arrows */
-    .carousel-control-prev, .carousel-control-next {
-      background-color: rgba(0, 0, 0, 0.2); /* Légère transparence */
-      border-radius: 50%;
-      font-size: 30px;
+    #tooltip {
+      position: absolute;
+      background-color: #333;
       color: #fff;
-      height: 50px;
-      width: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .carousel-control-prev-icon, .carousel-control-next-icon {
-      display: none; /* Cacher les icônes de flèche par défaut */
-    }
-
-    .carousel-control-prev::before, .carousel-control-next::before {
-      content: '';
-      width: 18px;
-      height: 18px;
-      border: solid #fff;
-      border-width: 0 2px 2px 0;
-      display: inline-block;
-      padding: 3px;
-    }
-
-    .carousel-control-prev::before {
-      transform: rotate(135deg);
-    }
-
-    .carousel-control-next::before {
-      transform: rotate(-45deg);
-    }
-
-    /* Ajout d'un effet de survol pour les flèches */
-    .carousel-control-prev:hover, .carousel-control-next:hover {
-      background-color: rgba(0, 0, 0, 0.4);
-      cursor: pointer;
-    }
-    /* Ajouter un effet de survol pour chaque mot */
-    .wordcloud canvas {
-      position: relative;
-    }
-    .wordcloud canvas span {
-      transition: color 0.3s, transform 0.3s ease-in-out;
-    }
-    .wordcloud canvas span:hover {
-      color: #FF5733; /* Nouvelle couleur au survol */
-      transform: scale(1.2); /* Agrandissement au survol */
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      pointer-events: none;
+      display: none;
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
 
-<div class="container mt-4">
-  <h2 class="text-center mb-4">✨ Word Cloud - Risk and Internal Control ✨</h2>
+<h2>Nuage de mots – Risk & Internal Control</h2>
+<canvas id="wordcloud"></canvas>
+<div id="tooltip"></div>
 
-  <div id="cloudCarousel" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-      <div class="carousel-item active"><canvas id="cloud1"></canvas></div>
-      <div class="carousel-item"><canvas id="cloud2"></canvas></div>
-      <div class="carousel-item"><canvas id="cloud3"></canvas></div>
-    </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#cloudCarousel" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#cloudCarousel" data-bs-slide="next">
-      <span class="carousel-control-next-icon"></span>
-    </button>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
 <script>
-  const colors = ['#FFA500', '#4CAF50', '#007BFF', '#FFC107', '#DC3545', '#6F42C1', '#17A2B8', '#FF69B4'];
-
   const wordPairs = [
     ['Risque', 'Risk'], ['Analyse des risques', 'Risk analysis'], ['Cartographie des risques', 'Risk mapping'],
-    ['Appétence au risque', 'Risk appetite'], ['Tolérance au risque', 'Risk tolerance'], ['Identification des risques', 'Risk identification'],
-    ['Évaluation des risques', 'Risk assessment'], ['Traitement des risques', 'Risk treatment'], ['Base risques', 'Risk base'],
-    ['Grille d\'avaluation', 'Evaluation grid'], ['Risque résiduel', 'Residual risk'], ['Risque brut', 'Gross risk'],
-    ['Risque avéré', 'Proven risk'], ['Probabilité', 'Probability'], ['Gravité', 'Severity'], ['Impact', 'Impact'],
-    ['Maturité', 'Maturity'], ['Criticité', 'Criticality'], ['Indicateur de risque clé (KRI)', 'Key Risk Indicator (KRI)'],
-    ['ICG', 'Overall criticality index'], ['Top risques', 'Top risks'], ['Risques prioritaires', 'Priority risk'],
-    ['Risques inacceptables', 'Unacceptable risks'], ['Comité risques', 'Risk committee'], ['Risques métier', 'Business risks'],
-    ['Risques projet', 'Project risks'], ['Risques SST', 'OHS risks'], ['Risques Environnement', 'Environmental risks'],
-    ['Risk advisor', 'Risk advisor'], ['Gestion de crise', 'Crisis management'], ['Audit des risques', 'Risk audit'],
+    ['Appétence au risque', 'Risk appetite'], ['Tolérance au risque', 'Risk tolerance'],
+    ['Identification des risques', 'Risk identification'], ['Évaluation des risques', 'Risk assessment'],
+    ['Traitement des risques', 'Risk treatment'], ['Base risques', 'Risk base'],
+    ['Grille d\'évaluation', 'Evaluation grid'], ['Risque résiduel', 'Residual risk'],
+    ['Risque brut', 'Gross risk'], ['Risque avéré', 'Proven risk'], ['Probabilité', 'Probability'],
+    ['Gravité', 'Severity'], ['Impact', 'Impact'], ['Maturité', 'Maturity'], ['Criticité', 'Criticality'],
+    ['Indicateur de risque clé (KRI)', 'Key Risk Indicator (KRI)'], ['ICG', 'Overall criticality index'],
+    ['Top risques', 'Top risks'], ['Risques prioritaires', 'Priority risk'],
+    ['Risques inacceptables', 'Unacceptable risks'], ['Comité risques', 'Risk committee'],
+    ['Risques métier', 'Business risks'], ['Risques projet', 'Project risks'], ['Risques SST', 'OHS risks'],
+    ['Risques Environnement', 'Environmental risks'], ['Risk advisor', 'Risk advisor'],
+    ['Gestion de crise', 'Crisis management'], ['Audit des risques', 'Risk audit'],
     ['Contrôle interne', 'Internal control'], ['COSO', 'COSO'], ['Processus de contrôle', 'Control process'],
-    ['Environnement de contrôle', 'Control environment'], ['Contrôle préventif', 'Preventive control'], ['Contrôle détectif', 'Detective control'],
-    ['Contrôle correctif', 'Corrective control'], ['Séparation des tâches', 'Segregation of duties'], ['Test de contrôle', 'Control testing'],
+    ['Environnement de contrôle', 'Control environment'], ['Contrôle préventif', 'Preventive control'],
+    ['Contrôle détectif', 'Detective control'], ['Contrôle correctif', 'Corrective control'],
+    ['Séparation des tâches', 'Segregation of duties'], ['Test de contrôle', 'Control testing'],
     ['Dossier de contrôle interne', 'Internal control documentation'], ['Déficience de contrôle', 'Control deficiency'],
-    ['Surveillance continue', 'Ongoing monitoring'], ['Plan d’action correctif', 'Corrective action plan'], ['Audit interne', 'Internal audit'],
-    ['Conformité', 'Compliance'], ['Gouvernance', 'Governance'], ['Processus métier', 'Business process'],
-    ['Indicateur de performance (KPI)', 'Key Performance Indicator (KPI)'], ['Fraude', 'Fraud'],
-    ['Normes ISO', 'ISO standards'], ['Tableau de bord risques', 'Risk dashboard'],
-    ['Plan de continuité d’activité (PCA)', 'Business Continuity Plan (BCP)'], ['Analyse d\'impact', 'Business Impact Analysis (BIA)'],
-    ['SMCA', 'Business Continuity Management System (BCMS)'], ['RTO', 'Recovery Time Objective (RTO)'],
-    ['RPO', 'Recovery Point Objective (RPO)'], ['DMIA', 'Maximum Tolerable Period of Disruption (MTPD)'],
-    ['Niveau de Service', 'Level of service (LOS)'], ['WAR', 'Work Area Recovery (WAR)'],
-    ['DRP', 'Disaster Recovery Plan (DRP)'], ['Seuil d\'alerte crise', 'Treshold for crisis alert'],
-    ['Kit de contrôle', 'Control kit'], ['Identification des contrôles', 'Identification of controls'],
-    ['Libellé du contrôle', 'Control label'], ['Pièces justificatives', 'Supporting documents'],
-    ['Déploiement des contrôles', 'Deployment of controls'], ['Prise en charge', 'Taking charge of controls'],
-    ['Mise en œuvre', 'Implementation of controls'], ['1er niveau', 'First-level controls'], ['2ème niveau', 'Second-level controls'],
+    ['Surveillance continue', 'Ongoing monitoring'], ['Plan d’action correctif', 'Corrective action plan'],
+    ['Audit interne', 'Internal audit'], ['Conformité', 'Compliance'], ['Gouvernance', 'Governance'],
+    ['Processus métier', 'Business process'], ['Indicateur de performance (KPI)', 'Key Performance Indicator (KPI)'],
+    ['Fraude', 'Fraud'], ['Normes ISO', 'ISO standards'], ['Tableau de bord risques', 'Risk dashboard'],
+    ['Plan de continuité d’activité (PCA)', 'Business Continuity Plan (BCP)'],
+    ['Analyse d\'impact', 'Business Impact Analysis (BIA)'], ['SMCA', 'Business Continuity Management System (BCMS)'],
+    ['RTO', 'Recovery Time Objective (RTO)'], ['RPO', 'Recovery Point Objective (RPO)'],
+    ['DMIA', 'Maximum Tolerable Period of Disruption (MTPD)'], ['Niveau de Service', 'Level of service (LOS)'],
+    ['WAR', 'Work Area Recovery (WAR)'], ['DRP', 'Disaster Recovery Plan (DRP)'],
+    ['Seuil d\'alerte crise', 'Treshold for crisis alert'], ['Kit de contrôle', 'Control kit'],
+    ['Identification des contrôles', 'Identification of controls'], ['Libellé du contrôle', 'Control label'],
+    ['Pièces justificatives', 'Supporting documents'], ['Déploiement des contrôles', 'Deployment of controls'],
+    ['Prise en charge', 'Taking charge of controls'], ['Mise en œuvre', 'Implementation of controls'],
+    ['1er niveau', 'First-level controls'], ['2ème niveau', 'Second-level controls'],
     ['Porteurs de contrôle', 'Control owners'], ['Réalisation des contrôles', 'Execution of controls'],
-    ['Description des étapes', 'Description of control execution steps'], ['Revue de la mise en œuvre', 'Review of control implementation'],
-    ['Identification des écarts', 'Identification of discrepancies'], ['Preuve de réalisation', 'Evidence of control execution'],
-    ['Suivi des plans d\'action', 'Monitoring of action plans'], ['Rapport de contrôle', 'Internal control report'],
-    ['Exhaustivité des contrôles', 'Exhaustiveness of controls'], ['Couverture des contrôles', 'Coverage of controls'],
-    ['Périodicité', 'Control periodicity'], ['Responsable de contrôle', 'Control owner'],
-    ['Affectation du contrôle', 'Control assignment'], ['Invariant du contrôle', 'Internal control invariant'],
-    ['Contrôle approuvé', 'Approved control'], ['Contrôle validé', 'Validated control'], ['Contrôle à implémenter', 'Control to be implemented'],
+    ['Description des étapes', 'Description of control execution steps'],
+    ['Revue de la mise en œuvre', 'Review of control implementation'],
+    ['Identification des écarts', 'Identification of discrepancies'],
+    ['Preuve de réalisation', 'Evidence of control execution'], ['Suivi des plans d\'action', 'Monitoring of action plans'],
+    ['Rapport de contrôle', 'Internal control report'], ['Exhaustivité des contrôles', 'Exhaustiveness of controls'],
+    ['Couverture des contrôles', 'Coverage of controls'], ['Périodicité', 'Control periodicity'],
+    ['Responsable de contrôle', 'Control owner'], ['Affectation du contrôle', 'Control assignment'],
+    ['Invariant du contrôle', 'Internal control invariant'], ['Contrôle approuvé', 'Approved control'],
+    ['Contrôle validé', 'Validated control'], ['Contrôle à implémenter', 'Control to be implemented'],
     ['Référentiel commun', 'Common control management framework']
   ];
 
-  // Mélange et séparation des mots de manière égale entre les trois carrousels
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
+  const list = wordPairs.map(pair => [pair[1], Math.floor(Math.random() * 10) + 10, pair[0]]); // [english, weight, french]
 
-  const shuffled = shuffle([...wordPairs]);
-
-  // Définir la taille de chaque groupe de mots de manière égale
-  const third = Math.ceil(shuffled.length / 3);
-  const words1 = shuffled.slice(0, third);
-  const words2 = shuffled.slice(third, 2 * third);
-  const words3 = shuffled.slice(2 * third);
-
-  // Conversion des paires de mots en une liste utilisable par WordCloud2.js
-  const toList = (pairs) => pairs.map(([fr, en]) => [en, Math.floor(Math.random() * 60) + 20]);
-
-  // Options pour chaque cloud avec la répartition des mots
-  const options = (canvasId, list) => ({
-    list: toList(list),
-    gridSize: 8, // Plus petite taille pour mieux répartir les mots
-    weightFactor: 5, // Augmenter l'impact du poids sur la taille du mot
-    fontFamily: 'Segoe UI, sans-serif',
-    color: () => colors[Math.floor(Math.random() * colors.length)],
+  WordCloud(document.getElementById('wordcloud'), {
+    list: list,
+    gridSize: 10,
+    weightFactor: 3,
+    fontFamily: 'Arial',
+    color: 'random-dark',
+    backgroundColor: '#fff',
     rotateRatio: 0.5,
-    backgroundColor: '#f8f9fa',
-    hover: (event, word) => {
-      word.style.color = '#FF5733';  // Change color on hover
-      word.style.transform = 'scale(1.2)';
-    },
+    shuffle: true,
+    drawOutOfBound: false,
+    hover: function (item, dimension, event) {
+      const tooltip = document.getElementById('tooltip');
+      if (item) {
+        tooltip.style.left = (event.pageX + 10) + 'px';
+        tooltip.style.top = (event.pageY + 10) + 'px';
+        tooltip.style.display = 'block';
+        tooltip.textContent = item[2]; // show French
+      } else {
+        tooltip.style.display = 'none';
+      }
+    }
   });
-
-  window.onload = () => {
-    const canvas1 = document.getElementById('cloud1');
-    const canvas2 = document.getElementById('cloud2');
-    const canvas3 = document.getElementById('cloud3');
-
-    // Ajuster la taille du canvas en fonction de la taille du conteneur
-    canvas1.width = canvas1.parentElement.offsetWidth;
-    canvas1.height = canvas1.parentElement.offsetHeight;
-    canvas2.width = canvas2.parentElement.offsetWidth;
-    canvas2.height = canvas2.parentElement.offsetHeight;
-    canvas3.width = canvas3.parentElement.offsetWidth;
-    canvas3.height = canvas3.parentElement.offsetHeight;
-
-    // Générer les word clouds
-    WordCloud(canvas1, options('cloud1', words1));
-    WordCloud(canvas2, options('cloud2', words2));
-    WordCloud(canvas3, options('cloud3', words3));
-  };
 </script>
 
 </body>
